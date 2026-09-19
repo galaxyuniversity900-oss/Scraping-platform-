@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import {ModelRegistry} from "../core/registry.mjs";
+import {RoutingPolicy} from "../core/policy.mjs";
+import {CircuitBreaker} from "../core/circuit-breaker.mjs";
+import {AgentGraph} from "../core/agent-graph.mjs";
+import {UsageLedger} from "../core/usage-ledger.mjs";
+const r=new ModelRegistry();r.register({id:"nvidia-a",provider:"nvidia",capabilities:["chat","code"],priority:80});r.register({id:"backup",provider:"openai",capabilities:["chat","code"],priority:60});
+const p=new RoutingPolicy({preferredProviders:["nvidia","openai"]});assert.equal(p.accepts(r.models[0],{capabilities:["code"]}),true);assert.ok(p.score(r.models[0],{})>p.score(r.models[1],{}));
+const cb=new CircuitBreaker({failureThreshold:2,cooldownMs:100});cb.failure("nvidia-a");assert.equal(cb.canTry("nvidia-a"),true);cb.failure("nvidia-a");assert.equal(cb.canTry("nvidia-a"),false);
+const g=new AgentGraph({maxParallel:2});g.addNode({id:"research",run:async()=>"facts"});g.addNode({id:"draft",dependsOn:["research"],run:async({dependencies})=>"draft:"+dependencies.research});assert.equal((await g.run("task")).draft,"draft:facts");
+const l=new UsageLedger();l.record({provider:"nvidia",tokens:100,cost:.01});l.record({provider:"openai",tokens:50,cost:.02});assert.equal(l.totals().tokens,150);console.log("PHASE 2 SMOKE TEST: PASS");

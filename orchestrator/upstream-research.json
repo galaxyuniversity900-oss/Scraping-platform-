@@ -1,0 +1,12 @@
+{
+  "researched_at":"2026-09-19",
+  "repositories":[
+    {"repo":"anderamondarainh-stack/veris","patterns":["OpenAI-compatible unified gateway","smart routing","fallback","cost accounting","multi-key","health"]},
+    {"repo":"agentgateway/agentgateway","patterns":["LLM gateway","MCP federation","A2A","auth","RBAC","observability","failover"]},
+    {"repo":"samuelpkg/samuel","patterns":["plugin tiers","skill loader","methodology hooks","stateful orchestration"]},
+    {"repo":"PhucPM89/LlmKeyPool","patterns":["quota-aware key rotation","cooldown","key fingerprinting","persistent state"]},
+    {"repo":"molleti-praveen/multi-agent-planner-executor-reviewer","patterns":["planner-executor-reviewer feedback loop"]},
+    {"repo":"ixqSCpxi/mcp-agent","patterns":["MCP lifecycle","aggregation","parallel orchestration"]}
+  ],
+  "policy":"Architectural inspiration only; no upstream source code is vendored."
+}

@@ -1,0 +1,12 @@
+{
+  "name":"creazzy-universal-ai-plugin",
+  "version":"1.0.0",
+  "protocol":"universal-agent-plugin-v1",
+  "entry":"./index.mjs",
+  "runtime":"node>=20",
+  "capabilities":["chat","vision","audio","video","files","code","tools","json","mcp","memory","routing","fallback","multi-account"],
+  "providerConnectorCatalog":"../providers/connectors.json",
+  "accountCapacity":{"defaultMaxAccounts":100,"defaultAccountsPerProvider":10,"expandable":true},
+  "security":{"apiKeys":"BYOK","encryptedAtRest":true,"neverLogSecrets":true,"noBrowserTokenScraping":true},
+  "transport":{"openaiCompatible":"/v1/chat/completions","health":"/healthz","ui":"/ui"}
+}

@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Creazzy",
+      "hasCanvas": false,
+      "bodyTextLen": 186,
+      "bodyTextHash": "42bcd3fd31a91b2bdd0848694481436755c72cf3851bf1732f1dfa89080c947e",
+      "bodyTextPrefix": "Creazzy Control plane Overview Chat Providers MCP Health One con",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Creazzy",
+      "hasCanvas": false,
+      "bodyTextLen": 700,
+      "bodyTextHash": "64e2c179c2ba0851cce1073933b155d024da06ff8cd292b3db71c2b02e4b4a87",
+      "bodyTextPrefix": "Creazzy Refresh READY Route any task across models, accounts, an",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

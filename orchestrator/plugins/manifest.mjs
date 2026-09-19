@@ -1,0 +1,3 @@
+const REQUIRED=["id","name","version","type"];
+export function validatePlugin(manifest){for(const k of REQUIRED)if(!manifest?.[k])throw new Error("PLUGIN_MANIFEST_MISSING_"+k);if(!["skill","wasm","oci","native"].includes(manifest.type))throw new Error("PLUGIN_TYPE_UNSUPPORTED");return true;}
+export function normalizePlugin(manifest){validatePlugin(manifest);return{permissions:[],capabilities:[],entry:null,enabled:true,...manifest};}

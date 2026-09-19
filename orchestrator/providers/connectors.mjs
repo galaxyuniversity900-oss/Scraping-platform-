@@ -1,0 +1,264 @@
+export const CONNECTOR_CATALOG={
+  "openai": {
+    "id": "openai",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.openai.com/v1",
+    "authEnv": "OPENAI_API_KEY",
+    "enabled": true
+  },
+  "anthropic": {
+    "id": "anthropic",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.anthropic.com",
+    "authEnv": "ANTHROPIC_API_KEY",
+    "enabled": true
+  },
+  "google": {
+    "id": "google",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+    "authEnv": "GEMINI_API_KEY",
+    "enabled": true
+  },
+  "xai": {
+    "id": "xai",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.x.ai/v1",
+    "authEnv": "XAI_API_KEY",
+    "enabled": true
+  },
+  "deepseek": {
+    "id": "deepseek",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.deepseek.com",
+    "authEnv": "DEEPSEEK_API_KEY",
+    "enabled": true
+  },
+  "mistral": {
+    "id": "mistral",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.mistral.ai/v1",
+    "authEnv": "MISTRAL_API_KEY",
+    "enabled": true
+  },
+  "groq": {
+    "id": "groq",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.groq.com/openai/v1",
+    "authEnv": "GROQ_API_KEY",
+    "enabled": true
+  },
+  "openrouter": {
+    "id": "openrouter",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://openrouter.ai/api/v1",
+    "authEnv": "OPENROUTER_API_KEY",
+    "enabled": true
+  },
+  "nvidia": {
+    "id": "nvidia",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://integrate.api.nvidia.com/v1",
+    "authEnv": "NVIDIA_API_KEY",
+    "enabled": true
+  },
+  "cohere": {
+    "id": "cohere",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.cohere.com/compatibility/v1",
+    "authEnv": "COHERE_API_KEY",
+    "enabled": true
+  },
+  "together": {
+    "id": "together",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.together.xyz/v1",
+    "authEnv": "TOGETHER_API_KEY",
+    "enabled": true
+  },
+  "fireworks": {
+    "id": "fireworks",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.fireworks.ai/inference/v1",
+    "authEnv": "FIREWORKS_API_KEY",
+    "enabled": true
+  },
+  "perplexity": {
+    "id": "perplexity",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.perplexity.ai",
+    "authEnv": "PERPLEXITY_API_KEY",
+    "enabled": true
+  },
+  "cerebras": {
+    "id": "cerebras",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.cerebras.ai/v1",
+    "authEnv": "CEREBRAS_API_KEY",
+    "enabled": true
+  },
+  "sambanova": {
+    "id": "sambanova",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.sambanova.ai/v1",
+    "authEnv": "SAMBANOVA_API_KEY",
+    "enabled": true
+  },
+  "deepinfra": {
+    "id": "deepinfra",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.deepinfra.com/v1/openai",
+    "authEnv": "DEEPINFRA_API_KEY",
+    "enabled": true
+  },
+  "ai21": {
+    "id": "ai21",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.ai21.com/studio/v1",
+    "authEnv": "AI21_API_KEY",
+    "enabled": true
+  },
+  "moonshot": {
+    "id": "moonshot",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.moonshot.ai/v1",
+    "authEnv": "MOONSHOT_API_KEY",
+    "enabled": true
+  },
+  "zhipu": {
+    "id": "zhipu",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+    "authEnv": "ZHIPU_API_KEY",
+    "enabled": true
+  },
+  "minimax": {
+    "id": "minimax",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.minimax.io/v1",
+    "authEnv": "MINIMAX_API_KEY",
+    "enabled": true
+  },
+  "siliconflow": {
+    "id": "siliconflow",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.siliconflow.com/v1",
+    "authEnv": "SILICONFLOW_API_KEY",
+    "enabled": true
+  },
+  "novita": {
+    "id": "novita",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.novita.ai/openai",
+    "authEnv": "NOVITA_API_KEY",
+    "enabled": true
+  },
+  "nebius": {
+    "id": "nebius",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.studio.nebius.ai/v1",
+    "authEnv": "NEBIUS_API_KEY",
+    "enabled": true
+  },
+  "friendli": {
+    "id": "friendli",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.friendli.ai/serverless/v1",
+    "authEnv": "FRIENDLI_TOKEN",
+    "enabled": true
+  },
+  "hyperbolic": {
+    "id": "hyperbolic",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.hyperbolic.xyz/v1",
+    "authEnv": "HYPERBOLIC_API_KEY",
+    "enabled": true
+  },
+  "lepton": {
+    "id": "lepton",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://llama3-1-70b.lepton.run/api/v1",
+    "authEnv": "LEPTON_API_KEY",
+    "enabled": true
+  },
+  "sao10k": {
+    "id": "sao10k",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.sao10k.com/v1",
+    "authEnv": "SAO10K_API_KEY",
+    "enabled": true
+  },
+  "upstage": {
+    "id": "upstage",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.upstage.ai/v1",
+    "authEnv": "UPSTAGE_API_KEY",
+    "enabled": true
+  },
+  "databricks": {
+    "id": "databricks",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://YOUR_DATABRICKS_HOST/serving-endpoints",
+    "authEnv": "DATABRICKS_TOKEN",
+    "enabled": true
+  },
+  "azure-openai": {
+    "id": "azure-openai",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://YOUR_RESOURCE.openai.azure.com/openai/deployments",
+    "authEnv": "AZURE_OPENAI_API_KEY",
+    "enabled": true
+  },
+  "vertex-ai": {
+    "id": "vertex-ai",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://us-central1-aiplatform.googleapis.com",
+    "authEnv": "GOOGLE_APPLICATION_CREDENTIALS",
+    "enabled": true
+  },
+  "huggingface": {
+    "id": "huggingface",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://router.huggingface.co/v1",
+    "authEnv": "HF_TOKEN",
+    "enabled": true
+  },
+  "replicate": {
+    "id": "replicate",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.replicate.com/v1",
+    "authEnv": "REPLICATE_API_TOKEN",
+    "enabled": true
+  },
+  "cloudflare-workers-ai": {
+    "id": "cloudflare-workers-ai",
+    "adapter": "openai-compatible",
+    "baseUrl": "https://api.cloudflare.com/client/v4/accounts",
+    "authEnv": "CLOUDFLARE_API_TOKEN",
+    "enabled": true
+  },
+  "ollama": {
+    "id": "ollama",
+    "adapter": "openai-compatible",
+    "baseUrl": "http://localhost:11434/v1",
+    "authEnv": null,
+    "enabled": true
+  },
+  "lm-studio": {
+    "id": "lm-studio",
+    "adapter": "openai-compatible",
+    "baseUrl": "http://localhost:1234/v1",
+    "authEnv": null,
+    "enabled": true
+  },
+  "vllm": {
+    "id": "vllm",
+    "adapter": "openai-compatible",
+    "baseUrl": "http://localhost:8000/v1",
+    "authEnv": null,
+    "enabled": true
+  }
+};
+export function getConnector(id){return CONNECTOR_CATALOG[id]||null;}
+export function listConnectors(){return Object.values(CONNECTOR_CATALOG);}
+export function createConnectorConfig({id,apiKey,model,timeoutMs}={}){const c=getConnector(id);if(!c)throw Object.assign(new Error("UNKNOWN_CONNECTOR"),{code:"INVALID_REQUEST"});return {provider:id,baseUrl:c.baseUrl,apiKey:apiKey||null,model:model||null,timeoutMs:timeoutMs||60000,adapter:c.adapter};}

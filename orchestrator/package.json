@@ -1,0 +1,19 @@
+{
+  "name": "creazzy-universal-orchestrator",
+  "version": "1.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node start-server.mjs",
+    "smoke": "node test/smoke.mjs && node test/phase2.mjs && node test/connected-chain.mjs && node test/final-chain.mjs && node test/multi-account-auth.mjs && node test/account-grid-100.mjs && node test/runtime-enhancements.mjs && node test/provider-execution.mjs",
+    "multi-account-auth": "node test/multi-account-auth.mjs",
+    "account-grid-100": "node test/account-grid-100.mjs",
+    "native-adapters": "node test/native-adapters.mjs",
+    "durable-state": "node test/durable-state.mjs",
+    "connectors": "node test/connectors.mjs",
+    "package:plugin": "node plugin/package.mjs",
+    "connected-chain": "node test/native-adapters.mjs && node test/durable-state.mjs && node test/connectors.mjs && node test/multi-account-auth.mjs && node test/account-grid-100.mjs && node test/provider-execution.mjs",
+    "runtime-enhancements": "node test/runtime-enhancements.mjs",
+    "provider-execution": "node test/provider-execution.mjs"
+  }
+}

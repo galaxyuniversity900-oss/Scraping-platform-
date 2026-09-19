@@ -1,0 +1,8 @@
+import {createHash} from "node:crypto";
+export class CredentialPool {
+  constructor(){this.keys=new Map();this.cursor=new Map();}
+  add(provider,secret,{label=""}={}){const id=createHash("sha256").update(secret).digest("hex").slice(0,12);const list=this.keys.get(provider)??[];if(!list.some(x=>x.id===id))list.push({id,secret,label,status:"available",fails:0,until:0});this.keys.set(provider,list);return id;}
+  inspect(provider){return (this.keys.get(provider)??[]).map(({secret,...x})=>({...x,masked:secret.slice(0,4)+"…"+secret.slice(-4)}));}
+  lease(provider){const list=this.keys.get(provider)??[];if(!list.length)throw Object.assign(new Error("NO_CREDENTIAL"),{code:"NO_CREDENTIAL"});const start=this.cursor.get(provider)??0;for(let n=0;n<list.length;n++){const i=(start+n)%list.length,k=list[i];if(k.status==="available"&&k.until<=Date.now()){this.cursor.set(provider,(i+1)%list.length);return {id:k.id,secret:k.secret,report:(ok,code)=>this.report(provider,k.id,ok,code)};}}throw Object.assign(new Error("ALL_CREDENTIALS_COOLING"),{code:"ALL_CREDENTIALS_COOLING"});}
+  report(provider,id,ok,code){const k=(this.keys.get(provider)??[]).find(x=>x.id===id);if(!k)return;if(ok){k.fails=0;k.status="available";return;}k.fails++;if(code===401||code==="AUTH_ERROR"||code==="insufficient_quota"){k.status="disabled";return;}k.until=Date.now()+Math.min(300000,1000*2**Math.min(k.fails,8));k.status="cooling";}
+}

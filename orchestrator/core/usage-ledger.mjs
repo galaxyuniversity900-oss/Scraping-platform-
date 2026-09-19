@@ -1,0 +1,1 @@
+export class UsageLedger { constructor(){this.entries=[];} record(entry){this.entries.push({at:new Date().toISOString(),...entry});} totals(){return this.entries.reduce((a,e)=>{a.requests++;a.tokens+=Number(e.tokens??0);a.cost+=Number(e.cost??0);a.byProvider[e.provider]=(a.byProvider[e.provider]??0)+1;return a;},{requests:0,tokens:0,cost:0,byProvider:{}});} }

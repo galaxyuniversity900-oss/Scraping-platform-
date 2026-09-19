@@ -1,0 +1,18 @@
+name: Orchestrator Smoke Test
+on:
+  push:
+    paths: ["orchestrator/**"]
+  pull_request:
+    paths: ["orchestrator/**"]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: orchestrator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm run smoke

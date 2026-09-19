@@ -1,0 +1,2 @@
+export function resolveSecret(name,env=process.env){const value=env[name];if(!value)throw Object.assign(new Error("MISSING_SECRET_"+name),{code:"MISSING_SECRET"});return value;}
+export function redact(value){if(!value)return value;return value.length<=8?"***":value.slice(0,4)+"…"+value.slice(-4);}

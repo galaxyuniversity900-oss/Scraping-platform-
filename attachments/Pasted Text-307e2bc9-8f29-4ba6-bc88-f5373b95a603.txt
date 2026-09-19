@@ -1,0 +1,1960 @@
+CREAZZY UNIVERSAL AI ORCHESTRATOR
+
+Project Master Context / Continuation Skill
+
+1. PURPOSE
+
+This skill contains the complete project context, requirements, architecture, implementation history, troubleshooting history, Git workflow, testing status, and remaining roadmap for the Creazzy Universal AI Orchestrator.
+
+The agent using this skill MUST NOT rely on memory or assumptions about previous work.
+
+The repository is:
+
+https://github.com/c83491307-gif/Plugins-collectors
+
+Primary working branch:
+
+"feat/freetoken-inspired-runtime"
+
+The project is being developed and tested from Android Termux.
+
+The project goal is to create a universal multi-model AI agent platform capable of connecting many AI providers, accounts, APIs, authentication mechanisms, MCP servers, plugins, skills, prompts, instructions, files, and media while providing intelligent routing, automatic failover, account rotation, and multi-model collaboration.
+
+---
+
+2. ORIGINAL PROJECT IDEA
+
+The project started as a universal plugin/orchestration system.
+
+The original objective evolved into a complete AI Agent application capable of working with many AI models and services.
+
+Target AI ecosystem includes, but is not limited to:
+
+- ChatGPT / OpenAI
+- Claude / Anthropic
+- Gemini / Google
+- Grok / xAI
+- NVIDIA APIs
+- DeepSeek
+- other OpenAI-compatible providers
+- other Anthropic-compatible providers
+- future providers discovered or added later
+
+The system must NOT be hard-coded around only one provider.
+
+The architecture must be extensible.
+
+---
+
+3. MULTI-PROVIDER REQUIREMENT
+
+The system must support many different AI providers.
+
+A provider may expose:
+
+- API key authentication
+- OAuth where officially supported
+- session authentication where officially supported
+- token authentication
+- compatible API endpoints
+- MCP servers
+- plugins
+- tools
+- file APIs
+- multimodal APIs
+
+The system should identify what kind of API or credential has been supplied and determine the corresponding provider whenever that can be done reliably.
+
+Provider detection MUST NOT rely solely on a user's filename or manually typed label.
+
+Use explicit provider metadata whenever possible.
+
+Never attempt to bypass provider authentication systems.
+
+---
+
+4. MULTI-ACCOUNT REQUIREMENT
+
+Each provider must support multiple independent accounts.
+
+Initial requirement:
+
+- at least 10 accounts per provider
+
+Global requirement:
+
+- up to 100 accounts in the current tested account grid
+
+Architecture must allow expansion beyond 100 without requiring a rewrite.
+
+Example:
+
+OpenAI
+  ├── Account 01
+  ├── Account 02
+  ├── ...
+  └── Account 10+
+
+Claude
+  ├── Account 01
+  ├── ...
+  └── Account 10+
+
+Gemini
+  ├── Account 01
+  └── ...
+
+Grok
+  ├── Account 01
+  └── ...
+
+DeepSeek
+  ├── Account 01
+  └── ...
+
+NVIDIA
+  ├── Account 01
+  └── ...
+
+The system must track account state independently.
+
+---
+
+5. ACCOUNT FAILOVER
+
+If one account:
+
+- reaches quota
+- reaches token limit
+- receives rate limiting
+- becomes unavailable
+- authentication expires
+- API becomes unhealthy
+- provider returns a retryable failure
+
+the system should automatically attempt another eligible account.
+
+Example:
+
+Provider A
+    ↓
+Account 01
+    ↓ quota exhausted
+Account 02
+    ↓ rate limited
+Account 03
+    ↓ success
+
+If all accounts of Provider A fail:
+
+Provider A
+   ↓
+all accounts unavailable
+   ↓
+Provider B
+   ↓
+Provider C
+
+The conversation/request should not be lost merely because one account or provider failed.
+
+The router should preserve the request context while changing execution resources.
+
+---
+
+6. PROVIDER HEALTH
+
+Every account/provider should have health information.
+
+Suggested states:
+
+healthy
+degraded
+down
+quota_exhausted
+auth_error
+rate_limited
+unknown
+
+Health data should include information such as:
+
+- last successful request
+- last failure
+- failure count
+- latency
+- quota state when available
+- authentication state
+- cooldown
+- circuit-breaker state
+
+Do not claim exact token/quota information when the provider does not expose it.
+
+---
+
+7. TOKEN / QUOTA MANAGEMENT
+
+The system should track usage where provider APIs expose usable information.
+
+It should distinguish:
+
+unknown
+estimated
+reported
+exhausted
+
+Do not fabricate token counts.
+
+When a provider explicitly reports:
+
+- quota exhausted
+- insufficient credits
+- rate limit
+- token limit
+
+mark the account appropriately.
+
+The system must allow the user to replace or rotate credentials before or after exhaustion.
+
+---
+
+8. 100-ACCOUNT GRID
+
+A dedicated test was created:
+
+test/account-grid-100.mjs
+
+It validates the multi-account capacity design.
+
+An earlier failure occurred:
+
+Error: PROVIDER_CAPACITY_REACHED
+
+because the provider-count calculation prevented adding additional providers.
+
+The account-capacity logic was then corrected.
+
+Another failure occurred:
+
+Error: ACCOUNT_CAPACITY_REACHED
+
+The capacity configuration/test behavior was corrected.
+
+The final verified result is:
+
+account-grid-100: ok
+
+This is an important existing requirement and MUST NOT be broken by future refactors.
+
+---
+
+9. MCP REQUIREMENT
+
+The application must support MCP servers.
+
+MCP is not optional.
+
+The architecture should allow:
+
+AI Model
+   ↓
+Orchestrator
+   ↓
+MCP Gateway
+   ↓
+MCP Server
+   ↓
+Tools / Resources
+
+MCP providers may include services such as Grok-compatible MCP integrations and other MCP-capable systems.
+
+The MCP architecture must support:
+
+- discovery
+- registration
+- lifecycle
+- qualified tool names
+- tool resolution
+- execution
+- errors
+- provider/server isolation
+
+---
+
+10. MCP QUALIFIED-NAME BUG
+
+A critical bug was found in:
+
+orchestrator/mcp/aggregator.mjs
+
+The problem was caused by JavaScript object spread ordering.
+
+The implementation effectively created a qualified name and then allowed the spread object to overwrite it.
+
+Incorrect conceptual pattern:
+
+{
+  name: qualifiedName,
+  ...tool
+}
+
+If "tool.name" exists, it overwrites "qualifiedName".
+
+Correct pattern:
+
+{
+  ...tool,
+  name: qualifiedName,
+  server: server.name
+}
+
+The explicit "name" property must come AFTER the spread.
+
+This was documented in "SKILL.md".
+
+The documentation includes:
+
+1. Symptom
+2. Root Cause
+3. Fix
+4. Verification
+5. Guard Rail
+6. Lesson
+
+The general JavaScript lesson:
+
+Object properties appearing later in an object literal override earlier properties.
+
+---
+
+11. MCP REGRESSION REQUIREMENT
+
+Future tests must explicitly verify qualified names.
+
+Example conceptual assertion:
+
+assert.equal(tool.name, `${server.name}__${originalToolName}`);
+
+The resolver must support qualified names consistently.
+
+Do not fix only the test.
+
+Fix the actual runtime behavior.
+
+---
+
+12. DEEPSEEK AUTHENTICATION
+
+DeepSeek was specifically discussed as a provider that does not provide the OAuth flow originally desired.
+
+The system therefore MUST NOT pretend that DeepSeek supports OAuth if it does not.
+
+The correct architecture is provider-specific authentication.
+
+For DeepSeek, use officially supported API credentials/API keys.
+
+General flow:
+
+User
+ ↓
+Connect DeepSeek
+ ↓
+Provider-specific connection UI
+ ↓
+Credential/API key
+ ↓
+Secure backend storage
+ ↓
+Connection Manager
+ ↓
+Health Check
+ ↓
+Provider Registry
+ ↓
+Router
+
+Do not scrape login sessions or bypass authentication controls.
+
+For providers that officially support OAuth, use their official OAuth flow.
+
+For providers that do not, use their officially supported API credential mechanism.
+
+---
+
+13. AUTHENTICATION ARCHITECTURE
+
+Authentication must be provider-specific.
+
+Supported abstraction:
+
+Auth Provider
+├── API Key
+├── OAuth
+├── Session
+├── Token
+└── Custom official authentication
+
+The connection object should contain metadata such as:
+
+id
+provider
+authType
+status
+createdAt
+updatedAt
+lastUsedAt
+health
+credentialReference
+
+Never expose raw credentials through normal API responses.
+
+Never log API keys.
+
+Never put credentials in frontend JavaScript.
+
+---
+
+14. SECURE CREDENTIAL STORAGE
+
+Credentials must be stored server-side.
+
+Recommended architecture:
+
+Frontend
+   ↓ HTTPS
+Backend
+   ↓
+Credential Manager
+   ↓
+Encrypted Storage
+   ↓
+Provider Adapter
+
+Use:
+
+- encryption at rest
+- environment-managed master key
+- secret references
+- access control
+- redacted logs
+- credential rotation
+
+The existing project already contains a "ConnectionManager" concept.
+
+Do not replace it with plaintext frontend storage.
+
+---
+
+15. OPENAI-COMPATIBLE SERVER
+
+The project has an OpenAI-compatible API server.
+
+Current endpoint structure includes:
+
+/healthz
+/v1/models
+/v1/chat/completions
+/connections
+/ui
+
+The server was successfully started on:
+
+http://127.0.0.1:8787
+
+The UI is:
+
+http://127.0.0.1:8787/ui
+
+Health endpoint returned:
+
+{"status":"ok"}
+
+Models endpoint currently returns an empty model list when no providers/models are registered:
+
+{
+  "object": "list",
+  "data": []
+}
+
+This is expected when no active model is registered.
+
+---
+
+16. SERVER TROUBLESHOOTING HISTORY
+
+A temporary issue occurred:
+
+Cannot find module '/tmp/start-server.mjs'
+
+The correct server entry point is in the repository:
+
+orchestrator/start-server.mjs
+
+Another issue occurred:
+
+SyntaxError: Invalid or unexpected token
+
+in:
+
+api/openai-compatible-server.mjs
+
+The cause was literal escaped newline characters accidentally written into source code.
+
+The API server file was corrected.
+
+Another issue:
+
+EADDRINUSE: address already in use :::8787
+
+was caused by another Node process already listening on port 8787.
+
+The correct procedure is to identify the existing process before starting another server.
+
+Example:
+
+ps -A | grep '[n]ode'
+
+Do NOT blindly launch multiple copies.
+
+---
+
+17. CURRENT SERVER VERIFICATION
+
+Previously verified:
+
+GET /healthz
+HTTP 200
+
+and:
+
+GET /v1/models
+HTTP 200
+
+and:
+
+GET /connections
+HTTP 200
+
+and:
+
+GET /ui
+HTTP 200
+
+The server therefore has a functioning basic HTTP/UI layer.
+
+---
+
+18. NO-CAPABLE-PROVIDER BEHAVIOR
+
+A request was tested:
+
+POST /v1/chat/completions
+
+with:
+
+{
+  "model": "test-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "ping"
+    }
+  ]
+}
+
+The server returned:
+
+{
+  "error": {
+    "message": "NO_CAPABLE_PROVIDER",
+    "code": "ERROR"
+  }
+}
+
+This is expected when there is no connected capable provider/model.
+
+Do not hide this error.
+
+The next architectural stage is to make the provider registry and adapters populate real executable models.
+
+---
+
+19. UNIVERSAL MODEL ROUTING
+
+The system must not assume that every model can perform every task.
+
+Each model/provider should have capabilities.
+
+Example:
+
+reasoning
+coding
+vision
+image
+audio
+video
+files
+long_context
+tool_calling
+structured_output
+MCP
+
+The router should evaluate:
+
+Request
+ ↓
+Required capabilities
+ ↓
+Eligible models
+ ↓
+Account health
+ ↓
+Provider health
+ ↓
+Quota
+ ↓
+Policy
+ ↓
+Priority
+ ↓
+Latency
+ ↓
+Execution
+
+---
+
+20. TASK SPECIALIZATION
+
+A major requirement is intelligent specialization.
+
+Example:
+
+Coding task
+ → coding-capable model
+
+Image understanding
+ → vision-capable model
+
+Long reasoning
+ → reasoning-capable model
+
+MCP-heavy task
+ → tool/MCP-capable model
+
+File extraction
+ → file-capable model
+
+If a model refuses or cannot perform the task:
+
+Model A
+ ↓
+failure / unsupported
+ ↓
+Model B
+ ↓
+success
+
+The system must preserve the original request/context.
+
+---
+
+21. SINGLE-MODEL THINKING
+
+The system must support:
+
+one model → reason → answer
+
+This should be the simplest execution mode.
+
+---
+
+22. MULTI-MODEL COLLABORATION
+
+The system must also support:
+
+Model A
+   ↓
+analysis
+   ↓
+Model B
+   ↓
+critique
+   ↓
+Model C
+   ↓
+synthesis
+
+Possible modes:
+
+Sequential
+Parallel
+Debate
+Critic
+Planner → Executor
+Researcher → Synthesizer
+Specialist → Generalist
+
+The user should eventually be able to choose whether one model or multiple models collaborate.
+
+---
+
+23. PLANNER
+
+The planner should analyze the task before execution.
+
+Example:
+
+User Request
+ ↓
+Planner
+ ↓
+Task classification
+ ↓
+Required capabilities
+ ↓
+Candidate models
+ ↓
+Execution plan
+ ↓
+Router
+
+Planner output should be structured where possible.
+
+---
+
+24. ADAPTIVE SCHEDULER
+
+Inspired by architectural ideas observed in FreeToken, the project now includes an adaptive scheduling layer.
+
+FreeToken was used as an architectural reference, not as a source to copy implementation code.
+
+The scheduler should consider:
+
+- capability
+- provider
+- model priority
+- health
+- circuit breaker
+- request constraints
+- maximum attempts
+- maximum parallelism
+
+Conceptual flow:
+
+Request
+ ↓
+Capability Analysis
+ ↓
+Candidate Models
+ ↓
+Scheduler
+ ↓
+Account/Provider Selection
+ ↓
+Execution
+
+---
+
+25. CIRCUIT BREAKER
+
+Failed providers/models should not necessarily be retried indefinitely.
+
+Circuit breaker states can include:
+
+closed
+open
+half-open
+
+Repeated failures should temporarily remove unhealthy resources from routing.
+
+Successful requests should restore health gradually.
+
+---
+
+26. CONTEXT CACHE
+
+A deterministic context cache was added.
+
+Its purpose is to avoid unnecessarily rebuilding/reprocessing identical context.
+
+Conceptual structure:
+
+System Instructions
++
+Prompt
++
+Conversation
++
+Tools
++
+Skills
++
+MCP
+ ↓
+Stable Context Representation
+ ↓
+Hash
+ ↓
+Context Cache
+
+The cache should:
+
+- have TTL
+- have maximum entries
+- support clearing
+- expose statistics
+- avoid stale state indefinitely
+
+Current implementation uses deterministic hashing.
+
+---
+
+27. FREETOKEN INSPIRATION
+
+The repository:
+
+https://github.com/FlashML-org/FreeToken
+
+was explicitly provided as inspiration.
+
+Relevant architectural ideas include:
+
+- OpenAI-compatible API
+- model/runtime separation
+- scheduling
+- caching
+- tool/reasoning parsing
+- resource management
+- model registry
+
+These concepts are adapted to the Creazzy architecture.
+
+Do NOT copy FreeToken implementation code into the project.
+
+Do NOT claim the project is FreeToken.
+
+The project is a separate orchestration platform.
+
+---
+
+28. OUTPUT NORMALIZATION
+
+Different providers produce different response structures.
+
+The system needs a normalized internal representation.
+
+Conceptual format:
+
+NormalizedResponse
+├── text
+├── reasoning
+├── toolCalls
+├── mcpCalls
+├── structuredOutput
+├── usage
+├── model
+├── provider
+└── error
+
+Provider adapters translate provider-specific output into this common representation.
+
+---
+
+29. FILE SUPPORT
+
+The application must support different file types.
+
+Potential categories:
+
+text
+documents
+PDF
+spreadsheets
+presentations
+images
+audio
+video
+archives
+code
+data
+
+The system should detect file type safely.
+
+It should not assume every model can process every file.
+
+The capability router should select an appropriate provider/model.
+
+---
+
+30. MEDIA SUPPORT
+
+The system should eventually support:
+
+image input
+image generation
+audio input
+audio generation
+video input
+video generation
+video analysis
+
+The architecture must treat media as capabilities.
+
+---
+
+31. FILE/MEDIA FALLBACK
+
+If Model A cannot process a file:
+
+Model A
+ ↓ unsupported
+Model B
+ ↓ extraction
+Model C
+ ↓ reasoning
+
+For example:
+
+PDF
+ ↓
+Document extractor
+ ↓
+Text/structured representation
+ ↓
+Reasoning model
+
+This keeps provider limitations isolated.
+
+---
+
+32. PLUGINS
+
+The system must support plugins.
+
+Plugins may provide:
+
+- tools
+- API integrations
+- actions
+- data sources
+- transformations
+- workflows
+
+Plugins must be isolated from the core router.
+
+---
+
+33. SKILLS
+
+The system must support Skills.
+
+Skills can define:
+
+- specialized workflows
+- instructions
+- tool requirements
+- capabilities
+- execution policies
+- reusable domain logic
+
+A skill should be composable with other skills.
+
+---
+
+34. PROMPTS
+
+The system must support reusable prompts.
+
+Prompt layers may include:
+
+System
+Developer
+Skill
+Plugin
+Task
+Conversation
+User
+
+Precedence must be explicit.
+
+---
+
+35. CUSTOM INSTRUCTIONS
+
+The application must support custom instructions independently from prompts.
+
+The system should be able to maintain:
+
+Global Instructions
+Provider Instructions
+Model Instructions
+Skill Instructions
+Task Instructions
+Conversation Instructions
+
+Do not silently overwrite user instructions.
+
+---
+
+36. MCP + PLUGINS + SKILLS
+
+These systems should be composable.
+
+Conceptual architecture:
+
+User
+ ↓
+Agent
+ ├── Instructions
+ ├── Skills
+ ├── Plugins
+ ├── MCP Servers
+ └── Tools
+       ↓
+   Model Router
+       ↓
+   Provider Adapter
+       ↓
+   Account
+
+---
+
+37. PROVIDER ADAPTER ARCHITECTURE
+
+Every provider should eventually have an adapter.
+
+Example:
+
+providers/
+├── openai/
+├── anthropic/
+├── google/
+├── xai/
+├── deepseek/
+├── nvidia/
+└── generic-openai-compatible/
+
+Each adapter should implement a normalized contract such as:
+
+authenticate
+validateConnection
+listModels
+capabilities
+chat
+stream
+toolCall
+fileSupport
+healthCheck
+usage
+
+Not every provider must implement every capability.
+
+Unsupported operations must return explicit structured errors.
+
+---
+
+38. ACCOUNT SELECTION
+
+The account selector should consider:
+
+provider
+capabilities
+health
+quota
+rate limits
+cooldown
+priority
+recent usage
+latency
+
+The first account should not always be used.
+
+A pool/rotation strategy is required.
+
+---
+
+39. RETRY POLICY
+
+Retry only when appropriate.
+
+Examples:
+
+Retryable:
+
+rate limit
+temporary provider error
+timeout
+transient network error
+temporary unavailable
+
+Usually not retryable without changing credentials/request:
+
+invalid API key
+invalid request
+unsupported capability
+permission denied
+
+Authentication failures may trigger account failover.
+
+---
+
+40. REQUEST CONTINUITY
+
+When failover occurs, preserve:
+
+conversation ID
+request ID
+system instructions
+skills
+tools
+MCP state
+files
+user prompt
+model requirements
+
+The user should not have to resend the request manually merely because an internal provider failed.
+
+---
+
+41. CURRENT TEST COMMAND
+
+Primary test:
+
+cd ~/Plugins-collectors/orchestrator
+npm run smoke
+
+The latest verified command output was:
+
+CREAZZY ORCHESTRATOR SMOKE TEST: PASS
+PHASE 2 SMOKE TEST: PASS
+CONNECTED CHAIN TEST: PASS
+FINAL CONNECTED CHAIN TEST: PASS
+multi-account-auth: ok
+account-grid-100: ok
+RUNTIME ENHANCEMENTS TEST: PASS
+
+This is the current baseline.
+
+---
+
+42. CURRENT TEST SUITE
+
+Current smoke chain:
+
+test/smoke.mjs
+test/phase2.mjs
+test/connected-chain.mjs
+test/final-chain.mjs
+test/multi-account-auth.mjs
+test/account-grid-100.mjs
+test/runtime-enhancements.mjs
+
+Current npm script conceptually runs:
+
+node test/smoke.mjs &&
+node test/phase2.mjs &&
+node test/connected-chain.mjs &&
+node test/final-chain.mjs &&
+node test/multi-account-auth.mjs &&
+node test/account-grid-100.mjs &&
+node test/runtime-enhancements.mjs
+
+A future change MUST preserve this chain unless a test is intentionally replaced with a stronger equivalent.
+
+---
+
+43. HISTORICAL CONNECTED-CHAIN BUG
+
+An earlier failure:
+
+TypeError [ERR_INVALID_ARG_TYPE]:
+The "regexp" argument must be an instance of RegExp.
+Received type string ('Be precise')
+
+was caused by an incorrect assertion call.
+
+The fix changed the assertion to use a real regular expression where appropriate.
+
+A later failure:
+
+0 !== 1
+
+occurred in the connected-chain test.
+
+This was subsequently resolved.
+
+Current state:
+
+CONNECTED CHAIN TEST: PASS
+
+Do not reintroduce string-as-regexp assertions.
+
+---
+
+44. GIT WORKFLOW
+
+Primary repository:
+
+c83491307-gif/Plugins-collectors
+
+Current feature branch:
+
+feat/freetoken-inspired-runtime
+
+Normal workflow:
+
+cd ~/Plugins-collectors
+
+git fetch origin
+git checkout feat/freetoken-inspired-runtime
+git pull origin feat/freetoken-inspired-runtime
+
+cd orchestrator
+
+npm run smoke
+
+Do not overwrite local changes blindly.
+
+---
+
+45. LOCAL CHANGE PROTECTION
+
+A previous pull failed because:
+
+M orchestrator/mcp/aggregator.mjs
+
+was locally modified.
+
+Git correctly refused:
+
+Your local changes ... would be overwritten by merge
+
+The safe process is:
+
+git diff -- orchestrator/mcp/aggregator.mjs
+
+Then, if appropriate:
+
+git stash push -m "local-mcp-aggregator-before-sync"
+git pull origin feat/freetoken-inspired-runtime
+git stash pop
+
+Never use:
+
+git reset --hard
+
+unless the user explicitly confirms that local changes can be destroyed.
+
+---
+
+46. GIT COMMIT HISTORY RELEVANT TO MCP
+
+A documentation/fix commit exists on the feature branch:
+
+a64ab9e892824f9f7a9939735e26acd581da41da
+
+Commit message:
+
+docs(skill): document MCP aggregator qualified-name bug + fix
+
+It documents the MCP qualified-name bug and its correction.
+
+---
+
+47. IMPORTANT BRANCH ORDER
+
+The intended logical order is:
+
+MCP resolver fix
+        ↓
+FreeToken-inspired runtime
+        ↓
+adaptive scheduler
+        ↓
+context cache
+        ↓
+provider adapters
+        ↓
+account health
+        ↓
+account failover
+        ↓
+provider failover
+        ↓
+MCP execution
+        ↓
+files/media
+        ↓
+multi-model collaboration
+        ↓
+production gateway
+
+Do not skip foundational layers merely to add UI features.
+
+---
+
+48. CURRENT ARCHITECTURAL STATUS
+
+Already verified:
+
+Repository
+        ✓
+
+Basic orchestrator
+        ✓
+
+Phase 2
+        ✓
+
+Connected chain
+        ✓
+
+Final chain
+        ✓
+
+Multi-account auth
+        ✓
+
+100-account grid
+        ✓
+
+MCP registration
+        ✓
+
+MCP qualified-name fix
+        ✓
+
+Runtime enhancements
+        ✓
+
+Adaptive scheduler foundation
+        ✓
+
+Context cache foundation
+        ✓
+
+Circuit-breaker integration
+        ✓
+
+Still requiring deeper implementation:
+
+Provider adapters
+        ↓
+Real credential validation
+        ↓
+Real model discovery
+        ↓
+Real account health polling
+        ↓
+Real quota tracking
+        ↓
+Runtime account rotation
+        ↓
+Provider failover
+        ↓
+MCP execution
+        ↓
+File/media pipeline
+        ↓
+Multi-model collaboration
+        ↓
+Production security hardening
+
+---
+
+49. NEXT IMPLEMENTATION PHASE
+
+The next phase MUST focus on real provider execution.
+
+Priority:
+
+PHASE A — PROVIDER ADAPTER CONTRACT
+
+Create a common adapter interface.
+
+Required conceptual methods:
+
+connect()
+validate()
+listModels()
+getCapabilities()
+healthCheck()
+chat()
+stream()
+countUsage()
+normalizeResponse()
+
+---
+
+PHASE B — ACCOUNT POOL
+
+Connect adapters to:
+
+ConnectionManager
+
+Each provider can have many accounts.
+
+The account pool must select an eligible account dynamically.
+
+---
+
+PHASE C — HEALTH ENGINE
+
+Implement:
+
+HealthMonitor
+
+It updates account/provider status.
+
+---
+
+PHASE D — QUOTA ENGINE
+
+Implement:
+
+UsageLedger
+QuotaTracker
+
+Do not invent provider data.
+
+---
+
+PHASE E — FAILOVER ENGINE
+
+Execution:
+
+request
+ ↓
+provider candidates
+ ↓
+account candidates
+ ↓
+health
+ ↓
+quota
+ ↓
+execute
+ ↓
+failure?
+ ├── retry same account if transient
+ ├── another account
+ ├── another provider
+ └── final error
+
+---
+
+50. PROVIDER PRIORITY
+
+Do not hard-code a permanent ranking such as "Provider X is best."
+
+Use objective task/capability matching.
+
+Example:
+
+Task:
+"Analyze image and call MCP tool"
+
+Requirements:
+
+vision
+tool_calling
+MCP
+
+The router should choose eligible providers based on:
+
+capabilities
+health
+availability
+policy
+latency
+quota
+
+---
+
+51. SECURITY RULES
+
+Never:
+
+- print API keys
+- store plaintext credentials unnecessarily
+- expose secrets to browser JavaScript
+- put secrets into Git
+- commit ".env"
+- log authorization headers
+- bypass provider authentication
+- scrape private sessions
+- impersonate provider clients
+- claim unsupported OAuth support
+
+Always:
+
+- redact secrets
+- encrypt credentials
+- validate provider responses
+- isolate accounts
+- use least privilege
+- support credential rotation
+- record audit-safe metadata
+
+---
+
+52. ENVIRONMENT
+
+Development environment used:
+
+Android
+Termux
+Node.js v24.18.0
+Git
+GitHub
+
+Local server:
+
+127.0.0.1:8787
+
+---
+
+53. UI
+
+Existing UI title:
+
+Creazzy Universal AI
+
+Current UI concept:
+
+UNIVERSAL AI ORCHESTRATOR
+
+One control plane for every model.
+
+Accounts
+Providers
+Models
+System status
+Model registry
+Refresh
+
+The UI is currently operational but still represents the infrastructure layer rather than the complete finished AI-agent application.
+
+Future UI should include:
+
+Dashboard
+Providers
+Accounts
+Models
+Chat
+Tasks
+MCP
+Plugins
+Skills
+Instructions
+Files
+Media
+Usage
+Health
+Logs
+Settings
+
+---
+
+54. CHAT MODES
+
+Eventually support:
+
+Normal Chat
+Agent Mode
+Planner Mode
+Multi-Agent Mode
+MCP Mode
+File Analysis
+Media Analysis
+Code Mode
+Research Mode
+
+The same underlying orchestration infrastructure should serve all modes.
+
+---
+
+55. MULTI-MODEL EXECUTION EXAMPLE
+
+Example:
+
+User:
+"Analyze this PDF, inspect the attached image, research the data,
+then produce a structured report."
+
+Planner
+ ↓
+Document extraction
+ ↓
+Vision model
+ ↓
+Research model
+ ↓
+Reasoning model
+ ↓
+Critic model
+ ↓
+Synthesis
+ ↓
+Final response
+
+The user should see a coherent final answer rather than manually coordinating each model.
+
+---
+
+56. FAILURE ISOLATION
+
+A single provider failure must not take down the entire application.
+
+Example:
+
+NVIDIA API DOWN
+       ↓
+NVIDIA accounts unavailable
+       ↓
+OpenAI still available
+       ↓
+Claude still available
+       ↓
+Gemini still available
+
+The control plane remains alive.
+
+---
+
+57. MODEL REGISTRY
+
+The registry should eventually contain:
+
+modelId
+provider
+account
+capabilities
+contextWindow
+inputTypes
+outputTypes
+toolSupport
+mcpSupport
+priority
+health
+pricing/usage metadata when officially available
+
+Do not fabricate model capabilities.
+
+---
+
+58. GENERIC OPENAI-COMPATIBLE PROVIDERS
+
+The system should support providers exposing OpenAI-compatible endpoints.
+
+Configuration can include:
+
+baseURL
+apiKey
+model
+headers
+capabilities
+
+But provider identity must remain explicit where possible.
+
+---
+
+59. ANTHROPIC-COMPATIBLE PROVIDERS
+
+Similarly support normalized adapters for Anthropic-compatible interfaces.
+
+Do not assume OpenAI and Anthropic APIs are semantically identical.
+
+Adapters must normalize differences.
+
+---
+
+60. LONG-TERM GOAL
+
+The final application should behave as a universal AI control plane:
+
+                    CREAZZY UNIVERSAL AI
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+     Providers             Accounts             Models
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                         Router
+                             │
+                 ┌───────────┼───────────┐
+                 │           │           │
+              Planner     Scheduler    Health
+                 │           │           │
+                 └───────────┼───────────┘
+                             │
+                   ┌─────────┼─────────┐
+                   │         │         │
+                  MCP     Plugins    Skills
+                   │         │         │
+                   └─────────┼─────────┘
+                             │
+                      Files / Media
+                             │
+                       AI Execution
+                             │
+                    Normalized Response
+
+---
+
+61. AGENT OPERATING RULES
+
+Any agent continuing this project MUST:
+
+1. Inspect the actual repository before changing code.
+2. Inspect the current branch.
+3. Inspect uncommitted changes.
+4. Run existing tests before major changes.
+5. Preserve passing tests.
+6. Make changes in connected dependency order.
+7. Run the relevant tests after each foundational change.
+8. Never silently discard local modifications.
+9. Never invent provider capabilities.
+10. Never invent authentication methods.
+11. Never copy implementation code from FreeToken.
+12. Use FreeToken only as an architectural reference.
+13. Keep provider-specific logic inside adapters.
+14. Keep routing independent from provider implementation.
+15. Keep credentials outside the frontend.
+16. Preserve 100-account compatibility.
+17. Preserve MCP qualified-name behavior.
+18. Preserve OpenAI-compatible API behavior.
+19. Add regression tests for every fixed bug.
+20. Do not declare completion based only on code existence; verify execution.
+
+---
+
+62. CONNECTED-CHAIN EXECUTION MODE
+
+When the user says:
+
+Work in connected chain
+
+interpret it as:
+
+inspect
+ ↓
+plan
+ ↓
+implement
+ ↓
+test
+ ↓
+fix
+ ↓
+test
+ ↓
+integrate
+ ↓
+test
+ ↓
+verify
+ ↓
+next dependency
+
+Do not perform unrelated parallel feature work that bypasses dependencies.
+
+If a foundational test fails, stop advancing the chain until the failure is fixed.
+
+---
+
+63. PROGRESS REPORTING
+
+When the user explicitly requests progress percentage:
+
+Use percentages based on actual implementation/verification, not arbitrary optimism.
+
+Example:
+
+Phase 1: 100%
+Phase 2: 100%
+Phase 3: 85%
+Overall: 72%
+
+Do not claim 100% until:
+
+- implementation exists
+- tests exist
+- tests pass
+- integration is verified
+- relevant runtime behavior is tested
+
+---
+
+64. FINAL CURRENT STATE
+
+At the point this skill was created, the verified smoke baseline is:
+
+CREAZZY ORCHESTRATOR SMOKE TEST: PASS
+PHASE 2 SMOKE TEST: PASS
+CONNECTED CHAIN TEST: PASS
+FINAL CONNECTED CHAIN TEST: PASS
+multi-account-auth: ok
+account-grid-100: ok
+RUNTIME ENHANCEMENTS TEST: PASS
+
+Therefore the infrastructure foundation is functioning.
+
+The immediate next engineering objective is:
+
+REAL PROVIDER ADAPTERS
+        ↓
+REAL ACCOUNT EXECUTION
+        ↓
+HEALTH
+        ↓
+QUOTA
+        ↓
+AUTOMATIC ACCOUNT FAILOVER
+        ↓
+PROVIDER FAILOVER
+        ↓
+MCP EXECUTION
+
+The system should then progress toward full multi-model agent execution.
+
+---
+
+65. DO NOT LOSE THESE REQUIREMENTS
+
+The following requirements are mandatory and must remain part of the project:
+
+✓ Multiple AI providers
+✓ Multiple accounts per provider
+✓ 100-account tested capacity
+✓ Expandable account capacity
+✓ Provider detection
+✓ Provider-specific authentication
+✓ Secure credential storage
+✓ API/session/auth abstractions
+✓ Account health
+✓ Token/quota awareness
+✓ Account failover
+✓ Provider failover
+✓ OpenAI-compatible gateway
+✓ Multiple chat modes
+✓ Plugins
+✓ Skills
+✓ Prompts
+✓ Custom Instructions
+✓ MCP servers
+✓ MCP discovery
+✓ MCP qualified tool names
+✓ MCP execution
+✓ File uploads
+✓ File downloads
+✓ File processing
+✓ Media support
+✓ Capability routing
+✓ Adaptive scheduling
+✓ Context caching
+✓ Circuit breaker
+✓ Planner
+✓ Single-model reasoning
+✓ Multi-model collaboration
+✓ Model specialization
+✓ Error isolation
+✓ Streaming
+✓ Normalized responses
+✓ Regression tests
+✓ Termux compatibility
+✓ GitHub-based development
+
+---
+
+66. SUCCESS CRITERIA
+
+The project is considered functionally mature when a user can do:
+
+1. Open Creazzy Universal AI.
+
+2. Add multiple providers.
+
+3. Add multiple accounts for each provider.
+
+4. Credentials are securely stored.
+
+5. The application validates connections.
+
+6. Models are discovered.
+
+7. The user starts a chat.
+
+8. The router identifies task requirements.
+
+9. The scheduler selects a capable model/account.
+
+10. The request executes.
+
+11. If Account 1 fails, Account 2 is tried.
+
+12. If the provider fails, another provider is tried.
+
+13. MCP tools can participate when enabled.
+
+14. Plugins and Skills can modify the execution plan.
+
+15. Files/media are routed to capable systems.
+
+16. Multiple models can collaborate.
+
+17. The final response is normalized.
+
+18. The user does not need to manually restart the workflow after an internal provider failure.
+
+---
+
+67. CONTINUATION INSTRUCTION
+
+When continuing development from this skill:
+
+Start by inspecting:
+
+git status
+git branch --show-current
+git log --oneline -10
+npm run smoke
+
+Then inspect the current implementation of:
+
+orchestrator/auth/connection-manager.mjs
+orchestrator/mcp/aggregator.mjs
+orchestrator/runtime.mjs
+orchestrator/core/
+orchestrator/api/
+orchestrator/providers/
+orchestrator/test/
+
+Do not assume paths exist.
+
+Use the actual repository state as the source of truth.
+
+Then continue from the first incomplete dependency in this order:
+
+Provider Adapter Contract
+        ↓
+Provider Registry
+        ↓
+Account Pool
+        ↓
+Health Monitor
+        ↓
+Quota/Usage
+        ↓
+Account Failover
+        ↓
+Provider Failover
+        ↓
+MCP Execution
+        ↓
+File/Media Pipeline
+        ↓
+Multi-Model Collaboration
+        ↓
+Production Hardening
+
+END OF SKILL

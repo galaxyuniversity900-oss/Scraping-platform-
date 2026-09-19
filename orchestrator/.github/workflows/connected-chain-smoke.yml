@@ -1,0 +1,22 @@
+name: connected-chain-smoke
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: orchestrator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node test/native-adapters.mjs
+      - run: node test/durable-state.mjs
+      - run: node test/connectors.mjs
+      - run: node test/multi-account-auth.mjs
+      - run: node test/account-grid-100.mjs

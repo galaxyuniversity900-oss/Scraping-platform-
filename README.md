@@ -27,3 +27,7 @@ The workspace contains its own package manifests and test/build scripts. Run the
 ## Import status
 
 The initial GitHub import is intentionally staged through an ephemeral extraction workflow. Once extraction succeeds, the workflow and archive remove themselves, leaving the decomposed project tree.
+
+## Import validation
+- Workspace archive extracted into the repository.
+- Import workflow removed itself after successful extraction.

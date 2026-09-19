@@ -1,0 +1,1 @@
+export class EventBus { constructor(){this.listeners=new Map();} on(type,fn){const s=this.listeners.get(type)??new Set();s.add(fn);this.listeners.set(type,s);return()=>s.delete(fn);} emit(type,payload){for(const fn of this.listeners.get(type)??[]){try{fn(payload);}catch{}}} }

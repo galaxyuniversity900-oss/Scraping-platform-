@@ -1,0 +1,1 @@
+{"maxAttempts":4,"maxParallel":4,"requireHealthy":true,"preferredProviders":["nvidia","openai","anthropic","google","xai"],"taskPolicies":{"code":{"maxAttempts":3},"vision":{"maxAttempts":4},"research":{"maxAttempts":4},"media":{"maxAttempts":4},"default":{"maxAttempts":4}}}

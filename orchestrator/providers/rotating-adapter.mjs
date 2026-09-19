@@ -1,0 +1,5 @@
+export class RotatingAdapter{
+  constructor({provider,connectionManager,adapterFactory}){this.provider=provider;this.pool=connectionManager;this.adapterFactory=adapterFactory;}
+  async invoke(request){let last;for(let attempt=0;attempt<Math.max(1,this.pool.list(this.provider).length);attempt++){const lease=this.pool.lease(this.provider);try{const adapter=this.adapterFactory({apiKey:lease.secret,provider:this.provider});const out=await adapter.invoke(request);lease.report(true);return out;}catch(e){last=e;lease.report(false,e.code??e.status);if(!["AUTH_ERROR","RATE_LIMIT","PROVIDER_DOWN","QUOTA_EXCEEDED"].includes(e.code))throw e;}}throw last??new Error("NO_AVAILABLE_CONNECTION");}
+  async health(){const lease=this.pool.lease(this.provider);try{const adapter=this.adapterFactory({apiKey:lease.secret,provider:this.provider});const out=await adapter.health();lease.report(true);return out;}catch(e){lease.report(false,e.code??e.status);throw e;}}
+}

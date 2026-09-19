@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import {createRuntime} from "../runtime.mjs";
+import {AssetPipeline} from "../media/asset-pipeline.mjs";
+import {ChatStore} from "../storage/chat-store.mjs";
+import {AuthPolicy} from "../security/auth-policy.mjs";
+const r=createRuntime();r.registry.register({id:"demo",provider:"openai",capabilities:["chat"],priority:50});assert.equal(r.registry.models.length,1);
+assert.equal(new AssetPipeline().inspect({name:"a.png",mime:"image/png",size:100}).kind,"image");
+const chats=new ChatStore();const c=chats.create({title:"test"});chats.append(c.id,{role:"user",content:"hello"});assert.equal(chats.get(c.id).messages.length,1);
+const auth=new AuthPolicy();auth.add("t",["chat"]);assert.equal(auth.authorize("t","chat"),true);
+console.log("FINAL CONNECTED CHAIN TEST: PASS");

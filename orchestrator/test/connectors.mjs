@@ -1,0 +1,1 @@
+import assert from "node:assert/strict"; import {listConnectors,getConnector} from "../providers/connectors.mjs"; assert.ok(listConnectors().length>=30); for(const id of ["openai","deepseek","anthropic","google","groq","ollama"])assert.ok(getConnector(id)); console.log("connectors: "+listConnectors().length+" registered");

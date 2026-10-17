@@ -1,0 +1,24 @@
+name: Meta Ad Library tool checks
+
+on:
+  push:
+    paths:
+      - "tools/meta-ad-library/**"
+      - ".github/workflows/meta-ad-library.yml"
+  pull_request:
+    paths:
+      - "tools/meta-ad-library/**"
+      - ".github/workflows/meta-ad-library.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run smoke tests
+        working-directory: tools/meta-ad-library
+        run: node test.mjs

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Meta Ad Library — مصر</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;color:#20252b;background:#f3f5f7}
+*{box-sizing:border-box}body{margin:0;padding:clamp(12px,3vw,28px)}main{max-width:1500px;margin:auto}
+header,.panel{background:#fff;border:1px solid #dce1e6;border-radius:12px;padding:18px;margin-bottom:14px}
+h1{font-size:clamp(22px,3vw,32px);margin:0 0 8px}p{line-height:1.7;color:#58616b;margin:6px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:14px}
+label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:650}
+input,select,button{font:inherit;min-height:42px;border:1px solid #c8d0d8;border-radius:7px;padding:9px;background:#fff;color:inherit}
+button{cursor:pointer;font-weight:700}button.primary{background:#20252b;color:#fff;border-color:#20252b}button:disabled{opacity:.55;cursor:wait}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.status{margin-top:12px;padding:10px;border-radius:7px;background:#eef2f5;white-space:pre-wrap}
+.status.error{background:#fff0f0;color:#8c2020}.table-wrap{overflow:auto;max-height:65vh;border:1px solid #dce1e6;border-radius:8px}
+table{border-collapse:collapse;width:100%;background:#fff;min-width:950px}th,td{padding:10px;border-bottom:1px solid #e5e8eb;text-align:right;vertical-align:top;font-size:13px}
+th{background:#edf0f3;position:sticky;top:0;z-index:1}td.copy{white-space:pre-wrap;min-width:280px;max-width:440px;overflow-wrap:anywhere}
+a{color:#1458a6;font-weight:650}.muted{font-size:12px}.count{font-weight:750}.pill{display:inline-block;padding:3px 7px;background:#edf0f3;border-radius:5px}
+</style>
+</head>
+<body><main>
+<header>
+<h1>بحث مكتبة إعلانات Meta — مصر</h1>
+<p>واجهة بحث تستخدم Meta Ad Library API الرسمية للإعلانات السياسية وقضايا المجتمع المتاحة في مصر. مفتاح الوصول يُحفظ على الخادم ولا يُرسل إلى المتصفح.</p>
+<p><strong>تنبيه مهم:</strong> الـ API الرسمي لا يعرض جميع الإعلانات التجارية العادية في مصر؛ لا تعتبر عدم ظهور إعلان دليلاً على أنه غير موجود.</p>
+</header>
+<section class="panel">
+<div class="grid">
+<label>كلمة البحث (مطلوبة)<input id="q" maxlength="200" placeholder="اسم جهة أو كلمة في الإعلان" autocomplete="off"></label>
+<label>من تاريخ البداية<input id="from" type="date"></label>
+<label>إلى تاريخ النهاية<input id="to" type="date"></label>
+<label>حالة الإعلان<select id="status"><option value="ALL">الكل</option><option value="ACTIVE">نشط</option><option value="INACTIVE">غير نشط</option></select></label>
+<label>نوع الوسائط<select id="media"><option value="ALL">الكل</option><option value="IMAGE">صور</option><option value="VIDEO">فيديو</option><option value="MEME">ميم</option><option value="NONE">بدون وسائط</option></select></label>
+<label>عدد الصفحات (حتى 1000 إعلان)<select id="pages"><option value="1">100 كحد أقصى</option><option value="3" selected>300 كحد أقصى</option><option value="5">500 كحد أقصى</option><option value="10">1000 كحد أقصى</option></select></label>
+</div>
+<div class="actions"><button class="primary" id="search">بحث</button><button id="csv" disabled>تصدير CSV</button><button id="clear">مسح النتائج</button></div>
+<div class="status" id="statusMsg" role="status" aria-live="polite">جاهز. اكتب كلمة البحث واضغط «بحث».</div>
+</section>
+<section class="panel">
+<p class="count" id="count">لا توجد نتائج بعد.</p>
+<div class="table-wrap"><table><thead><tr><th>الصفحة</th><th>نص الإعلان</th><th>تاريخ البداية</th><th>تاريخ النهاية</th><th>الظهور</th><th>الإنفاق</th><th>المنصات</th><th>المعاينة</th></tr></thead><tbody id="rows"><tr><td colspan="8">ابدأ عملية بحث لعرض النتائج.</td></tr></tbody></table></div>
+<p class="muted">الأرقام المعروضة نطاقات تقديرية عند توفرها. النتائج تتوقف عند عدد الصفحات المحدد أو نهاية النتائج المتاحة.</p>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let ads = [];
+function asRange(value) {
+  if (value == null || value === "") return "—";
+  if (typeof value === "object") {
+    const lo = value.lower_bound ?? value.lowerBound;
+    const hi = value.upper_bound ?? value.upperBound;
+    if (lo == null && hi == null) return "—";
+    return [lo, hi].map(n => n == null ? "?" : Number(n).toLocaleString()).join(" – ");
+  }
+  return String(value);
+}
+function safeDate(value) { return value ? String(value).slice(0,10) : "—"; }
+function cell(row, text, className) {
+  const td = document.createElement("td");
+  td.textContent = text ?? "—";
+  if (className) td.className = className;
+  row.appendChild(td);
+}
+function render() {
+  const tbody = $("rows"); tbody.replaceChildren();
+  if (!ads.length) { const tr=document.createElement("tr"); cell(tr,"لم يتم العثور على نتائج تطابق البحث."); tr.firstChild.colSpan=8; tbody.appendChild(tr); }
+  for (const ad of ads) {
+    const tr=document.createElement("tr");
+    cell(tr,ad.page_name || "—");
+    cell(tr,(ad.ad_creative_bodies || []).join("\n") || "—","copy");
+    cell(tr,safeDate(ad.ad_delivery_start_time));
+    cell(tr,safeDate(ad.ad_delivery_stop_time));
+    cell(tr,asRange(ad.impressions));
+    cell(tr,ad.spend ? asRange(ad.spend) + " " + (ad.currency || "") : "—");
+    cell(tr,(ad.publisher_platforms || []).join(", ") || "—");
+    const td=document.createElement("td");
+    if (typeof ad.ad_snapshot_url === "string" && /^https:\/\//i.test(ad.ad_snapshot_url)) {
+      const a=document.createElement("a"); a.href=ad.ad_snapshot_url; a.target="_blank"; a.rel="noopener noreferrer"; a.textContent="فتح المعاينة"; td.appendChild(a);
+    } else td.textContent="—";
+    tr.appendChild(td); tbody.appendChild(tr);
+  }
+  $("count").textContent = `عدد الإعلانات: ${ads.length.toLocaleString()}`;
+  $("csv").disabled = !ads.length;
+}
+function showStatus(message, error=false) { $("statusMsg").textContent=message; $("statusMsg").classList.toggle("error",error); }
+async function search() {
+  const q=$("q").value.trim();
+  if (!q) { showStatus("اكتب كلمة البحث أولاً.",true); $("q").focus(); return; }
+  if ($("from").value && $("to").value && $("from").value > $("to").value) { showStatus("تاريخ البداية يجب ألا يأتي بعد تاريخ النهاية.",true); return; }
+  $("search").disabled=true; showStatus("جارٍ الاتصال بـ Meta Ad Library API…");
+  try {
+    const params=new URLSearchParams({q, pages:$("pages").value,status:$("status").value,media:$("media").value});
+    if ($("from").value) params.set("from",$("from").value);
+    if ($("to").value) params.set("to",$("to").value);
+    const response=await fetch("/api/ads?"+params.toString(),{headers:{accept:"application/json"}});
+    const payload=await response.json();
+    if (!response.ok) throw new Error(payload.error || `فشل الطلب (HTTP ${response.status})`);
+    ads=payload.data || []; render();
+    showStatus(`اكتمل البحث: ${payload.count} إعلان. الصفحات المقروءة: ${payload.pagesRead}.${payload.hasMore ? " توجد نتائج إضافية؛ ارفع عدد الصفحات لإظهار المزيد." : ""}`);
+  } catch(error) {
+    showStatus("تعذر إكمال البحث: "+error.message+"\nتحقق من إعداد التوكن وإصدار Graph API وصلاحية الوصول، ثم جرّب مجدداً.",true);
+  } finally { $("search").disabled=false; }
+}
+function csvEscape(v) { let s=String(v ?? ""); if (/^[=+@\-\t\r]/.test(s)) s="'"+s; return '"'+s.replaceAll('"','""')+'"'; }
+function exportCsv() {
+  const headers=["id","page_id","page_name","ad_delivery_start_time","ad_delivery_stop_time","ad_creative_bodies","impressions","spend","currency","publisher_platforms","ad_snapshot_url"];
+  const lines=[headers,...ads.map(ad=>headers.map(k=>{
+    const v=ad[k]; return Array.isArray(v)?v.join(" | "):typeof v==="object"&&v!==null?JSON.stringify(v):v??"";
+  }))].map(row=>row.map(csvEscape).join(","));
+  const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+  const link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.download="meta-ad-library-egypt.csv"; link.click(); URL.revokeObjectURL(link.href);
+}
+$("search").addEventListener("click",search);
+$("q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
+$("csv").addEventListener("click",exportCsv);
+$("clear").addEventListener("click",()=>{ads=[];render();showStatus("تم مسح النتائج.");$("count").textContent="لا توجد نتائج بعد."});
+</script>
+</body></html>
